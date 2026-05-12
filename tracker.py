@@ -3,6 +3,7 @@ import aiohttp
 import sqlite3
 import time
 import re
+import random
 from statistics import mean
 from bs4 import BeautifulSoup
 
@@ -124,7 +125,7 @@ def calculate_score(ratio, spread):
 
     score = 0
 
-    # ratio score
+    # Ratio score
 
     if ratio <= 0.50:
         score += 50
@@ -138,7 +139,7 @@ def calculate_score(ratio, spread):
     elif ratio <= 0.80:
         score += 15
 
-    # spread score
+    # Spread score
 
     if spread >= 2:
         score += 50
@@ -209,7 +210,10 @@ async def send_alert(
 
 async def get_player_links(session, page):
 
-    url = f"https://www.futbin.com/players?page={page}"
+    url = (
+        f"https://www.futbin.com/players"
+        f"?page={page}"
+    )
 
     headers = {
         "User-Agent": (
@@ -218,7 +222,8 @@ async def get_player_links(session, page):
             "AppleWebKit/537.36 "
             "(KHTML, like Gecko) "
             "Chrome/124.0 Safari/537.36"
-        )
+        ),
+        "Accept-Language": "en-US,en;q=0.9"
     }
 
     try:
@@ -237,18 +242,20 @@ async def get_player_links(session, page):
 
         return []
 
-    links = set()
-
     matches = re.findall(
-        r'href="(/26/player/\d+/[^"]+)"',
+        r'/26/player/\d+/[a-zA-Z0-9\-]+',
         html
     )
 
+    links = set()
+
     for match in matches:
 
-        full_url = "https://www.futbin.com" + match
+        links.add(
+            "https://www.futbin.com" + match
+        )
 
-        links.add(full_url)
+    print(f"🔎 FOUND {len(links)} LINKS")
 
     return list(links)
 
@@ -265,7 +272,8 @@ async def check_player(session, url):
             "AppleWebKit/537.36 "
             "(KHTML, like Gecko) "
             "Chrome/124.0 Safari/537.36"
-        )
+        ),
+        "Accept-Language": "en-US,en;q=0.9"
     }
 
     try:
@@ -477,7 +485,9 @@ async def main():
 
             print("😴 SLEEPING")
 
-            await asyncio.sleep(CHECK_INTERVAL)
+            await asyncio.sleep(
+                CHECK_INTERVAL + random.randint(5, 20)
+            )
 
 
 # =====================================================
