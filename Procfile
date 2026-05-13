@@ -1,1 +1,1 @@
-worker: python tracker.py
+worker: python eafc26_bot.py
