@@ -48,8 +48,16 @@ TIPOS_ESPECIALES = {
 }
 
 # ── TOTY masculino con su propio límite más estricto ──
-# toty = TOTY masculino | wototy = TOTY femenino (excluido)
+# toty incluye ambos géneros en FUTBIN — filtramos femenino por nombre
 TOTY_VERSION = "toty"
+# Jugadoras del WOTOTY a excluir
+WOTOTY_EXCLUIR = {
+    "christiane endler", "millie bright", "selma bacha", "linda sembrant",
+    "alexia putellas", "aitana bonmati", "caroline graham hansen",
+    "trinity rodman", "linda caicedo", "sophia smith", "sam kerr",
+    "vivianne miedema", "pernille harder", "wendie renard", "griedge mbock",
+    "kadidiatou diani", "marie-antoinette katoto", "sakina karchaoui",
+}
 
 # ── TOTS de las ligas que importan ──
 TOTS_ACTIVOS = {
@@ -349,7 +357,11 @@ def revisar_especiales():
         f"https://www.futbin.com/26/players?version={TOTY_VERSION}&sort=PC_LTP&order=asc&minrating={OVR_MINIMO}",
         "TOTY", max_paginas=2
     )
-    baratas_toty = [c for c in cartas_toty if 0 < c["precio"] < PRECIO_LIMITE_TOTY]
+    baratas_toty = [
+        c for c in cartas_toty
+        if 0 < c["precio"] < PRECIO_LIMITE_TOTY
+        and c["nombre"].lower() not in WOTOTY_EXCLUIR
+    ]
     log(f"  TOTY masculino: {len(cartas_toty)} jugadores | {len(baratas_toty)} bajo {formatear_precio(PRECIO_LIMITE_TOTY)}")
     claves_toty = set()
     for carta in baratas_toty:
@@ -389,7 +401,7 @@ def revisar_errores_precio():
         time.sleep(random.uniform(3.0, 6.0))
         url_base = (
             f"https://www.futbin.com/26/players"
-            f"?leagueId={liga_id}&sort=PC_LTP&order=asc&minrating={OVR_MINIMO}"
+            f"?leagueId={liga_id}&sort=PC_LTP&order=asc"
         )
         cartas = scrape_multipagina(url_base, liga_nombre, max_paginas=2)
         errores = []
